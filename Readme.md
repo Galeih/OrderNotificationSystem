@@ -18,8 +18,8 @@ Ce projet propose une architecture microservices simple pour l’envoi de notifi
 
 ```mermaid
 flowchart LR
-    A[OrderService.Api\n(API REST)] -- Message Commande --> B>Azure Service Bus\n(Topic "orders")]
-    B -- Notification --> C[NotificationService.Worker\n(Worker Service)]
+    A[OrderService.Api (API REST)] -- Message Commande --> B[Azure Service Bus (Topic "orders")]
+    B -- Notification --> C[NotificationService.Worker (Worker Service)]
 ```
 
 ---
