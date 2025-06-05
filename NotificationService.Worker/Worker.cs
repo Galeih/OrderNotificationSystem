@@ -1,6 +1,7 @@
 using Azure.Messaging.ServiceBus;
 using Microsoft.EntityFrameworkCore;
 using NotificationService.Worker;
+using NotificationService.Worker.Services;
 using OrderService.Api.Data;
 using OrderService.Api.Models;
 
@@ -12,11 +13,13 @@ public class Worker : BackgroundService
     private readonly string _topicName = "orders";
     private readonly string _subscriptionName = "notifworker";
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IEmailSender _emailSender;
 
-    public Worker(ServiceBusClient client, IServiceScopeFactory scopeFactory)
+    public Worker(ServiceBusClient client, IServiceScopeFactory scopeFactory, IEmailSender emailSender)
     {
         _client = client;
         _scopeFactory = scopeFactory;
+        _emailSender = emailSender;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -43,12 +46,18 @@ public class Worker : BackgroundService
             string json = args.Message.Body.ToString();
             Console.WriteLine($"[Notification] Nouvelle commande reçue : {json}");
 
+            // Simuler un destinataire (exemple simple)
+            string recipient = "test@demo.fr";
+
+            // Tente d’envoyer un email (vrai ou simulé)
+            await _emailSender.SendOrderNotificationAsync(recipient, json);
+
             await args.CompleteMessageAsync(args.Message);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Error] Impossible de traiter le message : {ex.Message}");
-
+            Console.WriteLine($"[Error] Impossible de traiter le message (mail) : {ex.Message}");
+            // On laisse l’erreur générer un dead letter automatiquement
             await args.AbandonMessageAsync(args.Message);
         }
     }

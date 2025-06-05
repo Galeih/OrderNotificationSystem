@@ -2,6 +2,7 @@ using Azure.Messaging.ServiceBus;
 using NotificationService.Worker;
 using OrderService.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using NotificationService.Worker.Services;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
@@ -12,6 +13,7 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
     ));
 
 builder.Services.AddHostedService<Worker>();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 string? serviceBusConnectionString =
     builder.Configuration["AZURE_SERVICEBUS_CONNECTIONSTRING"];
