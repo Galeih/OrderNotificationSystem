@@ -3,8 +3,7 @@
     "NotificationService.Worker": {
       "commandName": "Project",
       "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Development",
-        "AZURE_SERVICEBUS_CONNECTIONSTRING": ""
+        "DOTNET_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true
     }

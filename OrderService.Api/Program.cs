@@ -1,17 +1,27 @@
+using Azure.Messaging.ServiceBus;
+using Microsoft.EntityFrameworkCore;
+using OrderService.Api.Data;
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 string? serviceBusConnectionString =
-    Environment.GetEnvironmentVariable("AZURE_SERVICEBUS_CONNECTIONSTRING")
-    ?? builder.Configuration["ServiceBus:ConnectionString"];
+    builder.Configuration["AZURE_SERVICEBUS_CONNECTIONSTRING"];
+
+builder.Services.AddDbContext<OrderDbContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+    ));
+
+builder.Services.AddSingleton(
+    new ServiceBusClient(serviceBusConnectionString)
+);
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton(
-    new Azure.Messaging.ServiceBus.ServiceBusClient(serviceBusConnectionString)
-);
+string? test = builder.Configuration.GetConnectionString("DefaultConnection");
 
 WebApplication app = builder.Build();
 
