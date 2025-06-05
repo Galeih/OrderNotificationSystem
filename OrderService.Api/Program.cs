@@ -1,6 +1,7 @@
 using Azure.Messaging.ServiceBus;
 using Microsoft.EntityFrameworkCore;
 using OrderService.Api.Data;
+using OrderService.Api.Services;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddSingleton(
     new ServiceBusClient(serviceBusConnectionString)
 );
 
+builder.Services.AddScoped<IDeadLetterService, DeadLetterService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
