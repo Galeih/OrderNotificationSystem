@@ -6,12 +6,12 @@ Système de notifications découplé via messaging en .NET utilisant Azure Servi
 
 ## 📦 Présentation
 
-Ce projet propose une architecture microservices simple pour l’envoi de notifications lors de la création de commandes, **avec persistance des commandes en base de données MySQL**.
+Ce projet propose une architecture microservices simple pour l’envoi de notifications lors de la création de commandes, **avec persistance des commandes et des messages Dead Letter en base de données MySQL**.
 
 * **OrderService.Api** : API REST pour passer des commandes (stockées en MySQL)
-* **NotificationService.Worker** : Service worker qui écoute les messages et traite les notifications
+* **NotificationService.Worker** : Service worker qui écoute les messages, traite les notifications **et archive en base MySQL les messages "dead letter"**
 * **Azure Service Bus** : Message broker cloud (topic/subscription)
-* **MySQL** : Stockage des commandes
+* **MySQL** : Stockage des commandes et des dead letters
 
 ---
 
@@ -22,6 +22,7 @@ flowchart LR
     A[OrderService.Api - API REST] -- Message Commande --> B[Azure Service Bus - Topic orders]
     B -- Notification --> C[NotificationService.Worker - Worker Service]
     A -- Persistance --> D[(MySQL)]
+    C -- Dead Letters --> D
 ```
 
 ---
@@ -29,8 +30,9 @@ flowchart LR
 ## 🚀 Fonctionnalités
 
 * Découplage complet API/Notifications via messaging cloud
-* **Persistance des commandes en base de données MySQL**
+* **Persistance des commandes ET des dead letters en base de données MySQL**
 * Traitement asynchrone des commandes
+* Gestion automatique des erreurs avec stockage des messages "dead letter" en BDD pour audit/retraitement
 * Modèle extensible (ajout de nouveaux consommateurs facile)
 * Prêt pour le déploiement cloud ou local (Docker, Azure App Service…)
 
@@ -92,6 +94,7 @@ Toutes les informations sensibles (**connection string Azure Service Bus & MySQL
 
 * Sur envoi, vérifiez la console du worker : un message doit s’afficher avec la commande reçue
 * Les commandes sont **persistées dans la base MySQL** (vérifiez via Workbench ou CLI)
+* En cas d’erreur ou de message non consommable, le worker archive automatiquement le message dead letter en base MySQL (table `DeadLetters`)
 
 ---
 
@@ -102,13 +105,21 @@ Toutes les informations sensibles (**connection string Azure Service Bus & MySQL
 
 ---
 
+## 🗄️ Dead Letter (Gestion des erreurs)
+
+* Si un message n'est pas consommé correctement par le worker, il est automatiquement envoyé dans la **dead letter queue** d'Azure Service Bus.
+* Le worker lit ces messages en dead letter et les enregistre en base de données MySQL (table `DeadLetters`).
+* Cela permet l’audit, la supervision et le retraitement manuel ou automatisé des erreurs de messagerie.
+
+---
+
 ## 🔗 Quelques pistes d'amélioration
 
 * Notifications réelles (email, SMS, webhook…)
 * Observabilité (logs, monitoring Azure)
 * Déploiement cloud (Azure App Service, Docker Compose)
-* Monitoring et gestion des erreurs (Dead Letter)
-* Front minimal pour visualiser les commandes
+* **Dashboard/Front pour visualiser et rejouer les dead letters**
+* Monitoring avancé et alertes
 
 ---
 

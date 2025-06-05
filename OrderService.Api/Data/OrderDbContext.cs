@@ -9,4 +9,5 @@ public class OrderDbContext : DbContext
         : base(options) { }
 
     public DbSet<Order> Orders { get; set; }
+    public DbSet<DeadLetterMessage> DeadLetters { get; set; }
 }
