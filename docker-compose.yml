@@ -1,0 +1,38 @@
+services:
+  mysql:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: order_notification_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  orderservice.api:
+    build:
+      context: .
+      dockerfile: OrderService.Api/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${MYSQL_CONNECTIONSTRING}
+      - AZURE_SERVICEBUS_CONNECTIONSTRING=${AZURE_SERVICEBUS_CONNECTIONSTRING}
+    ports:
+      - "5000:8080"
+    depends_on:
+      - mysql
+
+  notificationservice.worker:
+    build:
+      context: .
+      dockerfile: NotificationService.Worker/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=${MYSQL_CONNECTIONSTRING}
+      - AZURE_SERVICEBUS_CONNECTIONSTRING=${AZURE_SERVICEBUS_CONNECTIONSTRING}
+    depends_on:
+      - mysql
+      - orderservice.api
+
+volumes:
+  mysql_data:
