@@ -14,6 +14,7 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 
 builder.Services.AddHostedService<Worker>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddSingleton<IEmailSender, MockEmailSender>();
 
 string? serviceBusConnectionString =
     builder.Configuration["AZURE_SERVICEBUS_CONNECTIONSTRING"];
